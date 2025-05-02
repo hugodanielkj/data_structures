@@ -114,7 +114,6 @@ int main(){
     l.imprime(aux);
     cout << l[2] << endl;
     l.destroy();
-    cout << l;
     return 0;
 
     return 0;
