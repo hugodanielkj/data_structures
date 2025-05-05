@@ -3,11 +3,15 @@
 using namespace std;
 
 template<class T>
-struct Node {
-    Node(const int& num): next(NULL), val(num) {}
+class Node {
+public:
+    Node(const T& num): next(NULL), val(num) {}
     T val;
     Node* next;
 };
+
+template<class T>
+class linkedListIterator;
 
 template<class T>
 class linkedList {
@@ -16,14 +20,21 @@ private:
     Node<T>* LastP;
     int size;
 public:
+    typedef linkedListIterator<T> iterator;
+
+    iterator begin(){ return iterator(FirstP); }
+    iterator end(){ return iterator(NULL); }
+
     linkedList();
     void push_back(const int& a);   // 3 -> null
     void imprime();
     void imprime(Node<T>* aux);
     Node<T>* getFirstP(){return FirstP;}
     void destroy();
+    void create();
 
     const T& operator[](const int& i);
+    linkedList<T>& operator=(const linkedList<T>&);
 
     friend ostream& operator<<(ostream& o, const linkedList& l){
         Node<T>* aux = l.FirstP;
@@ -37,10 +48,58 @@ public:
 };
 
 template<class T>
+class linkedListIterator{
+friend class linkedList<T>;
+public:
+    linkedListIterator(Node<T>* _ptr): ptr(ptr) {}
+
+    T& operator*() { return ptr->val; }
+
+    linkedListIterator<T> operator++(int){
+        linkedListIterator<T> oldIt = *this;        // Don't know if works
+        ptr = ptr->next;
+        return oldIt;
+    }
+
+    linkedListIterator<T> operator++(){
+        ptr = ptr->next;
+        return *this;
+    }
+
+private:
+    Node<T>* ptr;
+};
+
+template<class T>
+linkedList<T>& linkedList<T>::operator=(const linkedList& other){
+    if(this == &other) return *this;    // If copying list to itself
+    else if(other.FirstP == NULL){ destroy();create();return *this; }     // If other list is empty
+    else{   
+        if(FirstP!=NULL)    // Destroy only if list is empty
+            destroy();
+        size = other.size;
+        FirstP = LastP = new Node<T>(other.FirstP->val);
+        Node<T>* aux = other.FirstP->next;
+        while(aux){
+            LastP->next = new Node<T>(aux->val);
+            LastP = LastP->next;
+            aux = aux->next;
+        }
+        return *this;
+    }
+}
+
+template<class T>
 const T& linkedList<T>::operator[](const int& i){
     Node<T>* aux = FirstP;
     for(int j=0;j<i;j++) aux = aux->next;
     return aux->val;
+}
+
+template<class T>
+void linkedList<T>::create(){   // cannot call this function if ll already exists
+    FirstP = LastP= NULL;
+    size=0;
 }
 
 // ERROR
@@ -102,19 +161,23 @@ void linkedList<T>::push_back(const int& a){
 
 int main(){
     linkedList<int> l;
-    cout << l;
     l.push_back(3);
-    cout << l;
     l.push_back(4);
-    cout << l;
     l.push_back(5);
+
+    linkedList<int> a;
+    linkedList<int> j;
+    //j = a = l;
+
+    l.push_back(1);
+    a.push_back(9);
+
+    //linkedListIterator<int> it(l.begin());
     cout << l;
-    cout << endl;
-    Node<int>* aux = l.getFirstP();
-    l.imprime(aux);
-    cout << l[2] << endl;
-    l.destroy();
-    return 0;
+    linkedList<int>::iterator it = l.begin();
+    cout << *it << endl;
+    it++;
+    cout << *it << endl;
 
     return 0;
 }
